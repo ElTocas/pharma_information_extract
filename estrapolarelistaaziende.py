@@ -173,32 +173,17 @@ if st.checkbox('Mostra risultati'):
     
     
     num_prodotti_per_azienda = Tab_aifa_sel.groupby(['Titolare AIC']).size()
-    if st.checkbox('Vedere solo tipologia prodotto (non tipologia di confezione)'):
-        Tab_aifa_sel_from_farmaco=Tab_aifa_sel.drop_duplicates(subset=['nomefarmaco'])
-        n_tot_solo_farmaco=Tab_aifa_sel_from_farmaco.shape[0]
-        n_tot=Tab_aifa_sel.shape[0]
+    Tab_aifa_original=Tab_aifa_sel;
+
+    fig = px.histogram(Tab_aifa_sel, 
+                       x="Titolare AIC",
+                       color="Principio Attivo",
+                       color_discrete_sequence=px.colors.qualitative.Light24,
+                       hover_data=['nomefarmaco','Principio Attivo'])
+    st.plotly_chart(fig)
         
-        Tab_aifa_sel = pd.concat([Tab_aifa_sel,Tab_aifa_sel_from_farmaco])
-        
-        categorie=np.concatenate((np.repeat('Confezioni', n_tot, axis=0), np.repeat('Farmaco', n_tot_solo_farmaco, axis=0)))
-        
-        Tab_aifa_sel['prodottivsfarmaco']=categorie;
-        fig = px.histogram(Tab_aifa_sel, x="Titolare AIC",color="prodottivsfarmaco",barmode="group")
-        st.plotly_chart(fig)
-    else:
-        fig = px.histogram(Tab_aifa_sel, x="Titolare AIC")
-        st.plotly_chart(fig)
-            
-        
-        
-        
-    
-    
-    
-    
-    
-    
+  
     if st.checkbox('Mostra DataFrame'):
-        st.dataframe(data=Tab_aifa_sel)
+        st.dataframe(data=Tab_aifa_original)
     
 
