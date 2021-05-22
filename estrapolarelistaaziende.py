@@ -152,14 +152,11 @@ else:
 
 
 
-Tab_aifa_sel = persistdata()
-
 if st.checkbox('Mostra risultati'):
     # Seleziono dati per grafico
     
     #seleziono per principio attivo
     indice=np.where(principio_attivo.isin(Principi_attivi_selezionati))
-    Tab_aifa_sel = persistdata()
     Tab_aifa_sel = Tab_aifa.iloc[indice[0],:]
     #seleziono per modalita duso    
     denominazione=Tab_aifa_sel["modalità d'uso"].str.lower()
@@ -192,22 +189,67 @@ if st.checkbox('Mostra risultati'):
     
     
     
-    if st.checkbox('Mostra DataFrame'):
-        st.dataframe(data=Tab_aifa_sel)
+    if st.checkbox('Mostra DataFrame informazioni aggiuntive'):
+        Tab_aifa_selA=Tab_aifa_sel;
+        
+        Aziende_selezionate = streamlit_tags.st_tags(
+            label='# Inserisci azienda:',
+            text='Press enter to add more',
+            value=[],
+            suggestions=Tab_aifa_selA["Titolare AIC"].str.lower().astype(str).tolist(),# creo lista di suggerimenti
+            maxtags = 10)
+    
+        if not Aziende_selezionate:
+            Aziende_selezionate=Tab_aifa_selA["Titolare AIC"].str.lower().astype(str).tolist()
+       
+        
+        temp_az=Tab_aifa_selA["Titolare AIC"].str.lower()
+        indice=np.where(temp_az.isin(Aziende_selezionate))
+        Tab_aifa_selA = Tab_aifa_selA.iloc[indice[0],:]
+        
+        nummeri=list()
+        for elem in Tab_aifa_selA['Prezzo al pubblico �']:
+            try:
+                elemento=elem.replace(",",".")
+                nummeri.append(float(elemento))
+            except:
+                nummeri.append(float("NAN"))   
+        
+        Tab_aifa_selA["prezzoalpubblico"]=nummeri
+        
+        
+        Tab_aifa_sel_nomefarmaco = Tab_aifa_selA.groupby(['nomefarmaco','Titolare AIC'])[["prezzoalpubblico"]].mean()
+        
+        st.text("Tabella ridotta per nome commerciale farmaco venduto e media")
+        st.dataframe(data=Tab_aifa_sel_nomefarmaco)
     
         user_input = st.text_input("Inserire una stringa della parola che si vuole trovare", 'erog')
         colonna_selezionata = st.selectbox("Selezionare il nome di una colonna in cui cercare",
-                                          Tab_aifa_sel.columns,
+                                          Tab_aifa_selA.columns,
                                           index=2)
         try:
             if st.checkbox('Cerca parola'): 
-                Tab_aifa_sel['parolacercataindec'] = Tab_aifa_sel[colonna_selezionata].str.find(user_input)
-                Tab_aifa_sel=Tab_aifa_sel.loc[Tab_aifa_sel['parolacercataindec']>4]
-                fig = px.histogram(Tab_aifa_sel, 
+                Tab_aifa_selA['parolacercataindec'] = Tab_aifa_selA[colonna_selezionata].str.find(user_input)
+                Tab_aifa_selA=Tab_aifa_selA.loc[Tab_aifa_selA['parolacercataindec']>-1]
+                fig = px.histogram(Tab_aifa_selA, 
                                    x="Titolare AIC",
                                    color="Principio Attivo",
                                    color_discrete_sequence=px.colors.qualitative.Light24,
                                    hover_data=['nomefarmaco','Principio Attivo'])
                 st.plotly_chart(fig)
+                st.dataframe(data=Tab_aifa_selA)    
+                fig2 = px.histogram(Tab_aifa_selA, 
+                                   x="Titolare AIC",
+                                   y="prezzoalpubblico",
+                                   color="Principio Attivo",
+                                   color_discrete_sequence=px.colors.qualitative.Light24,
+                                   hover_data=['nomefarmaco','Principio Attivo'])
+                st.plotly_chart(fig2)
+                
         except:
             st.text("Parola non trovata nella colonna scelta")
+            
+            st.plotly_chart(fig)
+            st.dataframe(data=Tab_aifa_selA) 
+            
+            
