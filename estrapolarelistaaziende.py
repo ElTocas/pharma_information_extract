@@ -173,8 +173,10 @@ if st.checkbox('Mostra risultati'):
     
     
     num_prodotti_per_azienda = Tab_aifa_sel.groupby(['Titolare AIC']).size()
-    Tab_aifa_original=Tab_aifa_sel;
-
+    
+    # else:
+        
+        
     fig = px.histogram(Tab_aifa_sel, 
                        x="Titolare AIC",
                        color="Principio Attivo",
@@ -182,8 +184,30 @@ if st.checkbox('Mostra risultati'):
                        hover_data=['nomefarmaco','Principio Attivo'])
     st.plotly_chart(fig)
         
-  
-    if st.checkbox('Mostra DataFrame'):
-        st.dataframe(data=Tab_aifa_original)
+        
+        
     
-
+    
+    
+    
+    
+    
+    if st.checkbox('Mostra DataFrame'):
+        st.dataframe(data=Tab_aifa_sel)
+    
+        user_input = st.text_input("Inserire una stringa della parola che si vuole trovare", 'erog')
+        colonna_selezionata = st.selectbox("Selezionare il nome di una colonna in cui cercare",
+                                          Tab_aifa_sel.columns,
+                                          index=2)
+        try:
+            if st.checkbox('Cerca parola'): 
+                Tab_aifa_sel['parolacercataindec'] = Tab_aifa_sel[colonna_selezionata].str.find(user_input)
+                Tab_aifa_sel=Tab_aifa_sel.loc[Tab_aifa_sel['parolacercataindec']>4]
+                fig = px.histogram(Tab_aifa_sel, 
+                                   x="Titolare AIC",
+                                   color="Principio Attivo",
+                                   color_discrete_sequence=px.colors.qualitative.Light24,
+                                   hover_data=['nomefarmaco','Principio Attivo'])
+                st.plotly_chart(fig)
+        except:
+            st.text("Parola non trovata nella colonna scelta")
