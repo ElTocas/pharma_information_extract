@@ -80,24 +80,21 @@ st.header('Data info:')
 st.write(Tab_aifa.shape[0].__str__() + ' rows,  ' + Tab_aifa.shape[1].__str__() + ' columns')
 st.write(Tab_aifa.describe(include='object'))
 
-# creo lista di suggerimenti
-lista_suggerimenti_principio_attivo = Tab_aifa["Principio Attivo"].str.lower().astype(str).tolist()
+# Seleziono più principi attivi
 Principi_attivi_selezionati = streamlit_tags.st_tags(
     label='# Inserisci principio attivo:',
     text='Press enter to add more',
     value=[],
-    suggestions=lista_suggerimenti_principio_attivo,
+    suggestions=Tab_aifa["Principio Attivo"].str.lower().astype(str).tolist(),# creo lista di suggerimenti
     maxtags = 10,
     key='1')
-
 if not Principi_attivi_selezionati:
-    Principi_attivi_selezionati=lista_suggerimenti_principio_attivo
+    Principi_attivi_selezionati=Tab_aifa["Principio Attivo"].str.lower().astype(str).tolist()
 
 
-
+# Aggiungo la colonna modalità d'uso
 lista_suggerimenti_modalita_duso=Tab_aifa["Descrizione Gruppo Equivalenza"].str.lower().astype(str).tolist()
 lista_uso=list()
-
 for frase in lista_suggerimenti_modalita_duso:
     res = frase.split()
     try:
@@ -107,46 +104,101 @@ for frase in lista_suggerimenti_modalita_duso:
         lista_uso.append("sconosciuta")
 
 Tab_aifa_temp = persistdata()
-
-        
 Tab_aifa["modalità d'uso"]=lista_uso
 
-
+# Aggiungo check selezione modalità d'uso
 lista_scelte_possibile_uso=np.array(['tutti'])
-
-
 indice=np.where(principio_attivo.isin(Principi_attivi_selezionati))
 Tab_aifa_temp = Tab_aifa.iloc[indice[0],:]
-
 lista_scelte_possibile_uso=np.append(lista_scelte_possibile_uso,Tab_aifa_temp["modalità d'uso"].unique().astype(str))
-
-moddalita_duso_selezionati = st.selectbox('Which use do u prefer?',lista_scelte_possibile_uso,index=0)
-
-
-
+moddalita_duso_selezionati = st.selectbox("Selezionare la modalità d'uso specifica",
+                                          lista_scelte_possibile_uso,
+                                          index=0)
 if moddalita_duso_selezionati=="tutti":
     moddalita_duso_selezionati=lista_uso
 else:
     moddalita_duso_selezionati=[moddalita_duso_selezionati]
 
+# Aggiungo nome farmaco
+lista_suggerimenti_nome_farmaco=Tab_aifa["Denominazione e Confezione"].str.lower().astype(str).tolist()
+lista_nomef=list()
+for frase in lista_suggerimenti_nome_farmaco:
+    try:
+        indice_nomef=frase.index('*')
+        lista_nomef.append(frase[0:indice_nomef])
+    except:
+        lista_nomef.append("sconosciuta")
+
+Tab_aifa["nomefarmaco"]=lista_nomef
+
+indice=np.where(principio_attivo.isin(Principi_attivi_selezionati))
+Tab_aifa_temp = Tab_aifa.iloc[indice[0],:]
+indice=np.where(Tab_aifa_temp["modalità d'uso"].isin(moddalita_duso_selezionati))
+Tab_aifa_temp = Tab_aifa_temp.iloc[indice[0],:]
+
+        
+lista_scelte_possibile_nomefarmaco=np.array(['tutti'])
+lista_scelte_possibile_nomefarmaco=np.append(lista_scelte_possibile_nomefarmaco,np.unique(Tab_aifa_temp["nomefarmaco"].astype(str)))
+
+farmaco_selezionati = st.selectbox("Selezionare il nome del farmaco specifico",
+                                          lista_scelte_possibile_nomefarmaco,
+                                          index=0)
+if farmaco_selezionati=="tutti":
+    farmaco_selezionati=lista_scelte_possibile_nomefarmaco
+else:
+    farmaco_selezionati=[farmaco_selezionati]
+
+
+
 
 
 Tab_aifa_sel = persistdata()
 
-if st.checkbox('Show results'):
-    # Seleziono dati per grafico : popolo Ta_aifa_red
+if st.checkbox('Mostra risultati'):
+    # Seleziono dati per grafico
+    
+    #seleziono per principio attivo
     indice=np.where(principio_attivo.isin(Principi_attivi_selezionati))
     Tab_aifa_sel = persistdata()
     Tab_aifa_sel = Tab_aifa.iloc[indice[0],:]
-        
+    #seleziono per modalita duso    
     denominazione=Tab_aifa_sel["modalità d'uso"].str.lower()
     indice=np.where(denominazione.isin(moddalita_duso_selezionati))
     Tab_aifa_sel = Tab_aifa_sel.iloc[indice[0],:]
+    #seleziono per farmaco
+    nomefarmaco=Tab_aifa_sel["nomefarmaco"].str.lower()
+    indice=np.where(nomefarmaco.isin(farmaco_selezionati))
+    Tab_aifa_sel = Tab_aifa_sel.iloc[indice[0],:]
     
-    prodotto_per_azienda = Tab_aifa_sel.groupby(['Titolare AIC']).size()
-
-    fig = fig = px.histogram(Tab_aifa_sel, x="Titolare AIC",labels={'x':'Nome Aziende', 'count':'Numero Confezioni'})
-    st.plotly_chart(fig)
-
+    
+    
+    num_prodotti_per_azienda = Tab_aifa_sel.groupby(['Titolare AIC']).size()
+    if st.checkbox('Vedere solo tipologia prodotto (non tipologia di confezione)'):
+        Tab_aifa_sel_from_farmaco=Tab_aifa_sel.drop_duplicates(subset=['nomefarmaco'])
+        n_tot_solo_farmaco=Tab_aifa_sel_from_farmaco.shape[0]
+        n_tot=Tab_aifa_sel.shape[0]
+        
+        Tab_aifa_sel = pd.concat([Tab_aifa_sel,Tab_aifa_sel_from_farmaco])
+        
+        categorie=np.concatenate((np.repeat('Confezioni', n_tot, axis=0), np.repeat('Farmaco', n_tot_solo_farmaco, axis=0)))
+        
+        Tab_aifa_sel['prodottivsfarmaco']=categorie;
+        fig = px.histogram(Tab_aifa_sel, x="Titolare AIC",color="prodottivsfarmaco",barmode="group")
+        st.plotly_chart(fig)
+    else:
+        fig = px.histogram(Tab_aifa_sel, x="Titolare AIC")
+        st.plotly_chart(fig)
+            
+        
+        
+        
+    
+    
+    
+    
+    
+    
+    if st.checkbox('Mostra DataFrame'):
+        st.dataframe(data=Tab_aifa_sel)
     
 
