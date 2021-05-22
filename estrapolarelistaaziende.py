@@ -12,7 +12,7 @@ import numpy as np
 import streamlit as st
 import streamlit_tags
 import plotly.express as px
-import plotly.figure_factory as ff
+#import plotly.figure_factory as ff
 
 @st.cache(allow_output_mutation=True)
 def persistdata():
