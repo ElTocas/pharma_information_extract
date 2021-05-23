@@ -2,7 +2,15 @@
 """
 Created on Thu May 20 11:39:29 2021
 
-@author: marti
+Estrapolazione dati riguardanti farmaci commerciali e aziende, riconducibili a:
+    principio attivo/i
+    modalità d'uso
+    Aziende specifica
+    Parola specifica ll'interno di una colonna
+    
+Il File usato come input è quello dell'AIFA'
+
+@author: eltocas
 """
 
 import pandas as pd
@@ -129,9 +137,6 @@ moddalita_duso_selezionati = streamlit_tags.st_tags(
     key='11')
 if not moddalita_duso_selezionati:
     moddalita_duso_selezionati=Tab_aifa["modalità d'uso"].str.lower().astype(str).tolist()
-
-
-
 
 
 
