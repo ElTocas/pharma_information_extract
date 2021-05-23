@@ -106,18 +106,34 @@ for frase in lista_suggerimenti_modalita_duso:
 Tab_aifa_temp = persistdata()
 Tab_aifa["modalità d'uso"]=lista_uso
 
-# Aggiungo check selezione modalità d'uso
-lista_scelte_possibile_uso=np.array(['tutti'])
-indice=np.where(principio_attivo.isin(Principi_attivi_selezionati))
-Tab_aifa_temp = Tab_aifa.iloc[indice[0],:]
-lista_scelte_possibile_uso=np.append(lista_scelte_possibile_uso,Tab_aifa_temp["modalità d'uso"].unique().astype(str))
-moddalita_duso_selezionati = st.selectbox("Selezionare la modalità d'uso specifica",
-                                          lista_scelte_possibile_uso,
-                                          index=0)
-if moddalita_duso_selezionati=="tutti":
-    moddalita_duso_selezionati=lista_uso
-else:
-    moddalita_duso_selezionati=[moddalita_duso_selezionati]
+# Aggiungo check selezione modalità d'uso singola
+#lista_scelte_possibile_uso=np.array(['tutti'])
+#indice=np.where(principio_attivo.isin(Principi_attivi_selezionati))
+#Tab_aifa_temp = Tab_aifa.iloc[indice[0],:]
+#lista_scelte_possibile_uso=np.append(lista_scelte_possibile_uso,Tab_aifa_temp["modalità d'uso"].unique().astype(str))
+#moddalita_duso_selezionati = st.selectbox("Selezionare la modalità d'uso specifica",
+#                                         lista_scelte_possibile_uso,
+#                                          index=0)
+#if moddalita_duso_selezionati=="tutti":
+#    moddalita_duso_selezionati=lista_uso
+#else:
+#    moddalita_duso_selezionati=[moddalita_duso_selezionati]
+
+# Aggiungo check selezione modalità d'uso multipla
+moddalita_duso_selezionati = streamlit_tags.st_tags(
+    label="# Inserisci la modalità d'uso da selezionare:",
+    text='Press enter to add more',
+    value=[],
+    suggestions=Tab_aifa["modalità d'uso"].str.lower().astype(str).tolist(),# creo lista di suggerimenti
+    maxtags = 10,
+    key='11')
+if not moddalita_duso_selezionati:
+    moddalita_duso_selezionati=Tab_aifa["modalità d'uso"].str.lower().astype(str).tolist()
+
+
+
+
+
 
 # Aggiungo nome farmaco
 lista_suggerimenti_nome_farmaco=Tab_aifa["Denominazione e Confezione"].str.lower().astype(str).tolist()
