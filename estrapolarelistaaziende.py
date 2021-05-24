@@ -16,7 +16,6 @@ Il File usato come input è quello dell'AIFA'
 import pandas as pd
 import numpy as np
 
-
 import streamlit as st
 import streamlit_tags
 import plotly.express as px
@@ -26,50 +25,22 @@ import plotly.express as px
 def persistdata():
     return {}
 
-Tab_aifa = persistdata()
+## Miglioro la tabella ed aggiungo campi
 Tab_aifa = pd.read_csv('Classe_A.csv',sep='\t')
-
-parola_da_cerca = "Ciclesonide";
-#parole_da_cerca = pd.Series(["ciclesonide", "fluticasone","olodaterolo","tiotropio","formoterolo","beclometasone","budesonide","indacaterolo","glicopirronio","aclidinio","benlarizumab"]);
-
-parole_da_cerca = pd.Series(["fluticasone", "beclometasone","budesonide"]);
 principio_attivo=Tab_aifa["Principio Attivo"].str.lower()
+# sostituisco i nan con un valore stringa
+Tab_aifa["Solo in lista di Regione:"]=Tab_aifa["Solo in lista di Regione:"].fillna("non disponibile")
+# aggiungo prezzo al pubblico
+nummeri=list()
+for elem in Tab_aifa['Prezzo al pubblico �']:
+    try:
+        elemento=elem.replace(",",".")
+        nummeri.append(float(elemento))
+    except:
+        nummeri.append(float("NAN"))   
+        
+Tab_aifa["prezzoalpubblico"]=nummeri
 
-
-indice=np.where(principio_attivo.isin(parole_da_cerca))
-
-Tab_aifa_red = Tab_aifa.iloc[indice[0],:]
-
-denominazione=Tab_aifa_red["Descrizione Gruppo Equivalenza"].str.lower()
-
-indice=np.where(denominazione.str.contains('respiratorio'))
-
-Tab_aifa_red = Tab_aifa_red.iloc[indice[0],:]
-
-
-
-
-
-aziende = Tab_aifa_red["Titolare AIC"]
-aziende = aziende.unique()
-
-# creo dizionario aziende
-dizionario = dict()
-
-for azienda in aziende:
-    temp = Tab_aifa_red[Tab_aifa_red["Titolare AIC"] == azienda]
-    dizionario[azienda]=temp
-
-dizionario_erog = dict()
-
-for azienda in aziende:
-    temp = Tab_aifa_red[Tab_aifa_red["Titolare AIC"] == azienda]
-    denominazione=temp["Denominazione e Confezione"].str.lower()
-    indice=np.where(denominazione.str.contains('erog'))
-    temp = temp.iloc[indice[0],:]
-
-dizionario_erog[azienda]=temp
-  
 
 ## Visualizzazione
 
@@ -87,9 +58,6 @@ st.dataframe(Tab_aifa.head(10))
 st.header('Data info:')
 st.write(Tab_aifa.shape[0].__str__() + ' rows,  ' + Tab_aifa.shape[1].__str__() + ' columns')
 st.write(Tab_aifa.describe(include='object'))
-# sostituisco i nan con un valore stringa
-Tab_aifa["Solo in lista di Regione:"]=Tab_aifa["Solo in lista di Regione:"].fillna("non disponibile")
-
 
 
 
@@ -174,15 +142,6 @@ else:
     farmaco_selezionati=[farmaco_selezionati]
 
 
-nummeri=list()
-for elem in Tab_aifa['Prezzo al pubblico �']:
-    try:
-        elemento=elem.replace(",",".")
-        nummeri.append(float(elemento))
-    except:
-        nummeri.append(float("NAN"))   
-        
-Tab_aifa["prezzoalpubblico"]=nummeri
 
 
 if st.checkbox('Mostra risultati'):
