@@ -170,7 +170,15 @@ else:
     farmaco_selezionati=[farmaco_selezionati]
 
 
-
+nummeri=list()
+for elem in Tab_aifa['Prezzo al pubblico �']:
+    try:
+        elemento=elem.replace(",",".")
+        nummeri.append(float(elemento))
+    except:
+        nummeri.append(float("NAN"))   
+        
+Tab_aifa["prezzoalpubblico"]=nummeri
 
 
 if st.checkbox('Mostra risultati'):
@@ -195,11 +203,11 @@ if st.checkbox('Mostra risultati'):
     # else:
         
         
-    fig = px.histogram(Tab_aifa_sel, 
+    fig = px.bar(Tab_aifa_sel, 
                        x="Titolare AIC",
                        color="Principio Attivo",
                        color_discrete_sequence=px.colors.qualitative.Light24,
-                       hover_data=['nomefarmaco','Principio Attivo'])
+                       hover_data=["Denominazione e Confezione","nomefarmaco","Principio Attivo","prezzoalpubblico"])
     st.plotly_chart(fig)
         
         
@@ -228,15 +236,7 @@ if st.checkbox('Mostra risultati'):
         indice=np.where(temp_az.isin(Aziende_selezionate))
         Tab_aifa_selA = Tab_aifa_selA.iloc[indice[0],:]
         
-        nummeri=list()
-        for elem in Tab_aifa_selA['Prezzo al pubblico �']:
-            try:
-                elemento=elem.replace(",",".")
-                nummeri.append(float(elemento))
-            except:
-                nummeri.append(float("NAN"))   
         
-        Tab_aifa_selA["prezzoalpubblico"]=nummeri
         
         
         Tab_aifa_sel_nomefarmaco = Tab_aifa_selA.groupby(['nomefarmaco','Titolare AIC'])[["prezzoalpubblico"]].mean()
@@ -252,20 +252,14 @@ if st.checkbox('Mostra risultati'):
             if st.checkbox('Cerca parola'): 
                 Tab_aifa_selA['parolacercataindec'] = Tab_aifa_selA[colonna_selezionata].str.find(user_input)
                 Tab_aifa_selA=Tab_aifa_selA.loc[Tab_aifa_selA['parolacercataindec']>-1]
-                fig = px.histogram(Tab_aifa_selA, 
+                fig = px.bar(Tab_aifa_selA, 
                                    x="Titolare AIC",
                                    color="Principio Attivo",
                                    color_discrete_sequence=px.colors.qualitative.Light24,
-                                   hover_data=['nomefarmaco','Principio Attivo'])
+                                   hover_data=["Denominazione e Confezione","nomefarmaco","Principio Attivo","prezzoalpubblico"])
                 st.plotly_chart(fig)
                 st.dataframe(data=Tab_aifa_selA)    
-                fig2 = px.histogram(Tab_aifa_selA, 
-                                   x="Titolare AIC",
-                                   y="prezzoalpubblico",
-                                   color="Principio Attivo",
-                                   color_discrete_sequence=px.colors.qualitative.Light24,
-                                   hover_data=['nomefarmaco','Principio Attivo'])
-                st.plotly_chart(fig2)
+                
                 
         except:
             st.text("Parola non trovata nella colonna scelta")
