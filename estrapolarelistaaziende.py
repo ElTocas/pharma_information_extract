@@ -48,7 +48,7 @@ Tab_aifa["prezzoalpubblico"]=nummeri
 
 
 
-st.title('Esplora dataset AIFA (Classe A - per principio attivo) al 15-12-2020)')
+st.title('Esplora [dataset AIFA] (https://www.aifa.gov.it/liste-dei-farmaci) (Classe A - per principio attivo) al 15-12-2020')
 st.subheader('by Tommaso Martire')
 
 
