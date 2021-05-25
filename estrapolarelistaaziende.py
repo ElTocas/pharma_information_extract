@@ -49,7 +49,7 @@ Tab_aifa["prezzoalpubblico"]=nummeri
 
 
 st.title('Esplora dataset AIFA (Classe A - per principio attivo) al 15-12-2020)')
-st.subheader('by Tommaso Martire (to.martire@gmail.com)')
+st.subheader('by Tommaso Martire')
 
 
 st.header('Dataframe content:')
