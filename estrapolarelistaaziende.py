@@ -52,7 +52,7 @@ st.title('Esplora [dataset AIFA] (https://www.aifa.gov.it/liste-dei-farmaci) (Cl
 st.subheader('by Tommaso Martire')
 
 
-st.header('Dataframe content:')
+st.header('Data content:')
 st.dataframe(Tab_aifa.head(10))
 
 st.header('Data info:')
@@ -60,9 +60,11 @@ st.write(Tab_aifa.shape[0].__str__() + ' rows,  ' + Tab_aifa.shape[1].__str__() 
 st.write(Tab_aifa.describe(include='object'))
 
 
+st.write("Esempio: fluticasone, beclometasone, budesonide")
 
 # Seleziono più principi attivi
 ## nn uso multiselect eprchè lento
+
 Principi_attivi_selezionati = streamlit_tags.st_tags(
     label='# Inserisci principio attivo:',
     text='Press enter to add more',
