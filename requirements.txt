@@ -1,5 +1,4 @@
 pandas
 numpy
 streamlit
-streamlit_tags
 plotly
